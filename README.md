@@ -15,7 +15,7 @@ fuzzy_report.txt is also produced which identifies values for Contest and Choice
 
 ### count_votes.py
 
-This uses the output from tevs_matcher_v2 to create a summaries of totals by precinct and for the whole country.
+This uses the output from tevs_matcher_v2 to create a summaries of totals by precinct and for the whole county.
 
 ### compare_harts.py
 
