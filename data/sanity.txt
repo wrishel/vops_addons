@@ -1,0 +1,64 @@
+Vote ops should be separated by at least a few pixels.
+This reports when voteop y offsets differ by less than 56.
+This may occur when a voter has marked outside the edges
+of two close vote ops, which will show up as a larger height field.
+It also occurs when vops pulls a bottom edge of the upper of two close vops,
+thinking it is the top edge of the lower vop.  THIS MUST BE FIXED IN VOPS.
+Until it is fixed, however, well marked lower vops will still have
+enough coverage that their votes will be captured. 
+Vote ops should have sufficient dark pixels to represent an empty vop.
+This reports when the dark pixel count is lower than 2300.
+An empty box with 10 dark scan lines for top wall and bottom wall
+and 12 dark scan lines for left wall and right wall
+will contribute a minimum of 2000+(12*33) = 2396 dark pixels
+if it is fully captured, and vops defaults to requiring 3500
+darkened pixels to count the mark as a vote.
+    
+Next line: dark pixel count below 2300
+006020.jpg,10000420100002,VOTE FOR ONE,KEVIN DE LEON,0,1785, 937,3080,102,54, 0,1,0.000000
+Next two lines: y offset too close (no scribble shows in height)
+021617.jpg,10000510200004,PROPOSITION 5 CHANGES REQUIREMENTS FOR CERTAIN PROPERTY OWNE,YES,0,2878, 1661,3178,102,54, 0,1,0.000000
+021617.jpg,10000510200004,PROPOSITION 5 CHANGES REQUIREMENTS FOR CERTAIN PROPERTY OWNE,NO,1,4427, 1661,3231,102,54, 0,1,0.000000
+Next two lines: y offset too close (no scribble shows in height)
+021657.jpg,10000510200004,PROPOSITION 5 CHANGES REQUIREMENTS FOR CERTAIN PROPERTY OWNE,YES,0,2922, 1670,3176,102,54, 0,1,0.000000
+021657.jpg,10000510200004,PROPOSITION 5 CHANGES REQUIREMENTS FOR CERTAIN PROPERTY OWNE,NO,1,4476, 1670,3229,102,54, 0,1,0.000000
+Next two lines: y offset too close (no scribble shows in height)
+021697.jpg,10000510200004,PROPOSITION 5 CHANGES REQUIREMENTS FOR CERTAIN PROPERTY OWNE,YES,1,5480, 1667,3177,102,54, 0,1,0.000000
+021697.jpg,10000510200004,PROPOSITION 5 CHANGES REQUIREMENTS FOR CERTAIN PROPERTY OWNE,NO,0,2354, 1667,3230,102,54, 0,1,0.000000
+Next two lines: y offset too close (no scribble shows in height)
+021721.jpg,10000510200004,PROPOSITION 5 CHANGES REQUIREMENTS FOR CERTAIN PROPERTY OWNE,YES,1,5556, 1668,3180,102,54, 0,1,0.000000
+021721.jpg,10000510200004,PROPOSITION 5 CHANGES REQUIREMENTS FOR CERTAIN PROPERTY OWNE,NO,0,2674, 1668,3230,102,54, 0,1,0.000000
+Next two lines: y offset too close (no scribble shows in height)
+021733.jpg,10000510200004,PROPOSITION 5 CHANGES REQUIREMENTS FOR CERTAIN PROPERTY OWNE,YES,1,5212, 1669,3174,102,54, 0,1,0.000000
+021733.jpg,10000510200004,PROPOSITION 5 CHANGES REQUIREMENTS FOR CERTAIN PROPERTY OWNE,NO,0,2400, 1669,3227,102,54, 0,1,0.000000
+Next line: dark pixel count below 2300
+021761.jpg,10000510200004,PROPOSITION 5 CHANGES REQUIREMENTS FOR CERTAIN PROPERTY OWNE,NO,0,2291, 1667,3228,102,54, 0,1,0.000000
+Next two lines: y offset too close (no scribble shows in height)
+021761.jpg,10000510200004,PROPOSITION 5 CHANGES REQUIREMENTS FOR CERTAIN PROPERTY OWNE,YES,1,5547, 1667,3175,102,54, 0,1,0.000000
+021761.jpg,10000510200004,PROPOSITION 5 CHANGES REQUIREMENTS FOR CERTAIN PROPERTY OWNE,NO,0,2291, 1667,3228,102,54, 0,1,0.000000
+Next two lines: y offset too close (no scribble shows in height)
+021777.jpg,10000510200004,PROPOSITION 5 CHANGES REQUIREMENTS FOR CERTAIN PROPERTY OWNE,YES,0,3005, 1660,3179,102,54, 0,1,0.000000
+021777.jpg,10000510200004,PROPOSITION 5 CHANGES REQUIREMENTS FOR CERTAIN PROPERTY OWNE,NO,1,4499, 1660,3231,102,54, 0,1,0.000000
+Next line: dark pixel count below 2300
+021801.jpg,10000510200004,PROPOSITION 5 CHANGES REQUIREMENTS FOR CERTAIN PROPERTY OWNE,NO,0,2239, 1661,3230,102,54, 0,1,0.000000
+Next two lines: y offset too close (no scribble shows in height)
+021801.jpg,10000510200004,PROPOSITION 5 CHANGES REQUIREMENTS FOR CERTAIN PROPERTY OWNE,YES,1,5380, 1661,3178,102,54, 0,1,0.000000
+021801.jpg,10000510200004,PROPOSITION 5 CHANGES REQUIREMENTS FOR CERTAIN PROPERTY OWNE,NO,0,2239, 1661,3230,102,54, 0,1,0.000000
+Next two lines: y offset too close (no scribble shows in height)
+021953.jpg,10000510200004,PROPOSITION 5 CHANGES REQUIREMENTS FOR CERTAIN PROPERTY OWNE,YES,0,2930, 1658,3180,102,54, 0,1,0.000000
+021953.jpg,10000510200004,PROPOSITION 5 CHANGES REQUIREMENTS FOR CERTAIN PROPERTY OWNE,NO,1,4507, 1657,3232,102,54, 0,1,0.000000
+Next two lines: y offset too close (no scribble shows in height)
+023927.jpg,20000910400067,MEASURE  CITY OF EUREKA SHALL THE EUREKA MUNICIPAL CODE BE A,NO,0,3082, 202,1452,102,55, 0,0,0.000000
+023939.jpg,20000920400088,MEASURE 0 HUMBOLDT COUNTY PUBLIC SAFETYESSENTIAL SERVICES RE,YES,0,2967, 221,1408,100,55, 0,0,0.000000
+Next two lines: y offset too close (no scribble shows in height)
+034579.jpg,20000610400019,MEASURE M CITY OF ARCATA SHALL THE INITIATIVE MEASURE AN INI,NO,0,3053, 215,1042,101,56, 0,0,0.000000
+034599.jpg,20000610400019,MEASURE M CITY OF ARCATA SHALL THE INITIATIVE MEASURE AN INI,YES,0,2957, 230,989,100,54, 0,0,0.000000
+Next two lines: y offset too close (no scribble shows in height)
+008203.jpg,20000700400014,MEASURE M CITY OF ARCATA SHALT THE INITIATIVE MEASURE AN INI,NO,1,5658, 206,1027,102,65, 0,0,0.000000
+034575.jpg,20000610400019,MEASURE M CITY OF ARCATA SHALL THE INITIATIVE MEASURE AN INI,YES,0,3009, 218,983,102,54, 0,0,0.000000
+28474 unique image filenames in details.csv
+BONDS found in contest and choice texts (possible missed choice)
+JAMES found in contest and choice texts (possible missed choice)
+WARD found in contest and choice texts (possible missed choice)
+ALISON found in contest and choice texts (possible missed choice)
+end

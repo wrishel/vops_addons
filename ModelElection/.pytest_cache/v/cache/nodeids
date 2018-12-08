@@ -1,0 +1,4 @@
+[
+  "test/model_election_test.py::test_simple", 
+  "test/model_election_test.py::test_real_world"
+]

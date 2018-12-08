@@ -1,0 +1,4 @@
+{
+  "model_election_test.py::test_real_world": true, 
+  "model_election_test.py::testfail": true
+}
