@@ -17,69 +17,7 @@ import time
 from ModelElection.ModelElection import *
 from DetailLine.DetailLine import *
 
-'''
 
-    parameters set at top of main:
-        # imagesp
-        max_image_number
-        detailsp  params.INF_DETAILS
-        params.OUT_UNMATCHED_PCTIDS
-        params.OUF_TOTALS  # output for comparison by precinct group
-        details_outp
-        official_datap
-        hardmatches
-    
-    objects
-        detail_line_ext 
-        file_names
-        unmatched_contests detail.line object key is detail_line.choice
-        unmatched_choices (name, contest, barcode, filename, details line number)
-        unmatched_precinct_IDs (details line)
-        details_out_lines
-
-    initialize
-        file_names from imagesp
-        create details_output file 
-        create unmatched_contests
-        create unmatched_choices
-        create unmatched_precinct_IDs
-        create details_includes set
-        hm = hardmatches
-        
-    
-    workflow
-        print report header
-        
-        for each row in details.csv
-            progress report
-            if image number > max_image_number
-                # accumulate image numbers skipped
-                continue
-            create out_line object with input line details
-            if output_line.file name in details_includes
-            delete file name from all file names (may already be deleted)
-            lookup precinct id by barcode
-            if precinct_id not found
-                add item to unmatched_precinct_IDs
-            add precinct_id to out_line
-            add fuzzy contest to utline
-            if fuzzy contest is none
-                add item to unmatched_contests
-                add item to unmatched_choices
-            else
-                add fuzzy choice to out_line
-                if fuzzy choice is none
-                    add item to unmatched_choices
-                            
-        header for unmatched precinct ids
-        print unmatched_precinct_ids
-                    
-        header for unmatched_contests
-        print unmatched_contests
-                    
-        header for unmatched_choices
-        print unmatched_choices
-'''
 
 # INITIALIZATION
 
@@ -217,12 +155,15 @@ class Tevs_options(object):
         with open(self.incsv) as data:
             for ll in data.readlines():
 
-                # do this as early as possible to speed up test runs
+                # Eliminate input about ballot images no in the test set.
+                # Do this as early as possible to speed up test runs
                 #
                 if self.include_files and ll[:10] not in self.include_files:
                     continue
                 ll = whole_input_line_hacker.hack(ll)
                 retval = Detail_line(ll)
+                retval.contest = input_contest_hacker.hack(retval.contest)
+                barcode_hacker(retval, barcode_hacklist)
                 self.linecnt += 1
 
                 # various hacks on contest name
@@ -249,77 +190,138 @@ class Tevs_options(object):
     def fixfilename(self, s):
         return s.lower()
 
-class hacker(object):
+class hacker(object):           # TODO: report which items were used.
+    '''List of ['S or R, old-value, new-value]
+
+       S means use string substitution. R means use regex.'''
+
     def __init__(self, list):
         self.list = list
 
     def hack(self, value):
         v = value
-        for pattern, replacement in self.list:
-            value = re.sub(pattern, replacement, value)
-        # if v != value:
-        #     print 'hack in', v.strip()
-        #     print 'hackout', value
+        for type, pattern, replacement in self.list:
+            if type.upper() == 'R':
+                value = re.sub(pattern, replacement, value)
+            elif type.upper() == 'S':
+                value = value.replace(pattern, replacement)
+            else:
+                raise ValueError('"{}" is not a valid replacement type'.format(type))
+
         return value
 
-# ---------------------------------------- MAIN ---------------------------------------- #
+def barcode_hacker(dl, hacklist):
+    for bc_hack in hacklist:
+        if dl.barcode == bc_hack[0]:
+            dl.corrected_barcode = bc_hack[1]
+            break
+
+    if dl.corrected_barcode is None:
+        dl.corrected_barcode = dl.barcode
+
+# hacks to fix specific input problems
 
 whole_input_line_hacker = hacker([
-    (r'PROPOSITION 114', 'PROPOSITION 14'),
-    (r'"', ''),
-    (r' *VOTE FOR (ONE|TWO|THREE|FOUR|FIVE)', ''), # increase fuzzy discrimination
+    ('S', "\xe2\x80\x98", ''),                       # eliminate single quotes passed by vops
 ])
+
+barcode_hacklist = [
+    ("09637383686383", '20000820300065'),  # bar-code correction
+    ("20001087677706", '20001050300063'),  # bar-code correction
+]
 
 input_contest_hacker = hacker([
-
+    ('S', 'LOLETA UNION SCHOOL DISTRICT GOVERNING BOARD MEMBER 4YR VOTE',
+          'LOLETA UNION SCHOOL DISTRICT GOVERNING BOARD MEMBER 4YR VOTE FOR NO MORE THAN THREE'),
+    ('S', 'BEING INVESTIGATED OR PROSECUTED FOR CRIMINAL ACTIVITY',
+            'MEASURE K HUMBOLDT COUNTY IMMIGRATION SANCTUARY ORDINANCE MEASURE'),
+    ('S', 'RICHMAN BE ELECTED TO THE OFFICE FOR TERM PROVIDED BY LAW',
+            'COURT OF APPEAL-ASSOCIATE JUSTICE-DISTRICT 1 DIVISION 2 JAMES A. RICHMAN'),
+    ('S', 'RICHMAN BE ELECTED TO THE OFFICE FOR T TERM PROVIDED BY LAW',
+            'COURT OF APPEAL-ASSOCIATE JUSTICE-DISTRICT 1 DIVISION 2 JAMES A. RICHMAN'),
+    ('S', 'MARGULIES BE ELECTED TO THE OFFICE F THE TERM PROVIDED BY',
+            'COURT OF APPEAL-ASSOCIATE JUSTICE-DISTRICT 1 DIVISION 1 SANDRA MARGULIES'),
+    ('S', 'ER EE 6 ELIMINATES CERTAIN ROAD REPAIR AND TRANSPORTATION',
+            'MEASURE K HUMBOLDT COUNTY IMMIGRATION SANCTUARY ORDINANCE MEASURE'),
+    ('S', 'INCREASE IN TAX RATE BE AQOPTED',
+            'MEASURE O HUMBOLDT COUNTY PUBLIC SAFETY/ESSENTIAL SERVICES RENEWAL'),
+    ('S', 'QELRENLORAUNY TUADO AIL OUICT COOTIILIC GENERAL SERVICES S',
+            'MEASURE O HUMBOLDT COUNTY PUBLIC SAFETY/ESSENTIAL SERVICES RENEWAL'),
+    ('S', 'GQCLENHUORALILY UAE AI UUTET COOTTILILE GENERAL SERVICES SHA',
+            'MEASURE O HUMBOLDT COUNTY PUBLIC SAFETY/ESSENTIAL SERVICES RENEWAL'),
+    ('S', 'QELENLORAUNLG TODDO ALU OUI COOTIIC GENERAL SERVICES SHALL',
+            'MEASURE O HUMBOLDT COUNTY PUBLIC SAFETY/ESSENTIAL SERVICES RENEWAL'),
+    ('S', 'ANNUALLY UNTIL ENDED BY VOTERS WITH NN NY ANNUAL AUDITSCITIZEN OVERSIGHT',
+     'MEASURE O HUMBOLDT COUNTY PUBLIC SAFETY/ESSENTIAL SERVICES RENEWAL'),
+    ('S', 'NEE NAP EA ENELENEA TOU EEN','CITY OF EUREKA MAYOR'),
 ])
 
-
-start= time.time()
-
-# These items could be created by commandline parsing, but not now
-max_image_number = '299999'
-
-# general paramaters
-#
 class Params(object):   # https://stackoverflow.com/questions/1325673/how-to-add-property-to-a-class-dynamically/1333275
     pass
 
-params = Params()
-params.INCLUDES =   None #  ['005412.jpg']   # for debugging
+def unique_output_name(base_name, outputdir):
+    of = os.path.join(outputdir, base_name)
+    while os.path.isfile(of):
+        file = os.path.basename(of)
+        fname = file[:-4]
+        fnum = int(fname[-2:])
+        if fnum > 99:
+            of = 'fuzzy_report00.txt'
+            return of
+        else:
+            fnum = fnum + 1
+            of = pth_small_outputs + 'fuzzy_report' + '{:02d}'.format(int(fnum)) + '.txt'
+
+    return of
+
+# ---------------------------------------- MAIN ---------------------------------------- #
+
+start= time.time()
+params = Params()   # in the future some of these man be command line parameters
+
+# paths to major file groups
+#
+pth_current_run = os.getcwd() + '/'
+pth_big_files = '/Users/Wes/NotForTheCloud/2018_Nov/in-process'
+pth_elections_static = pth_current_run + 'data/static_2018_nov/'
+pth_small_outputs = pth_current_run + 'output/'
+
+# general paramaters
+#
+params.INCLUDES = [] #'024681.jpg']    # for debugging
 params.PROG_REPORT = 100000
-params.SHORT_RUN = 10000
+params.SHORT_RUN = None                     # for debugging
 if params.SHORT_RUN:
     params.PROG_REPORT = int(params.SHORT_RUN/10)
 
 
-# files
+#   input from vops
 #
-pth_current_run = os.getcwd() + '/'
+params.INF_DETAILS = os.path.join(pth_big_files, 'details190106.csv')
+                                  # 'testdetails.csv')
 
-# input from vops
+#   input files from that describe the election
 #
-params.INF_DETAILS = pth_current_run + 'vops/' + 'details181202.csv'
-
-# input files from Elections Department
-#
-pth_elections_static = pth_current_run + 'static_2018_nov/'
 params.INF_HARTS_PRECINCTS = pth_elections_static + 'precincts_massaged.txt' #'precincts.tsv'
-# params.INF_HARTS_TOTS = pth_elections_static + 'from_elections/General_blank_report.txt.csv'
 params.INF_HARD_MATCHES = pth_elections_static + 'hard_matches.tsv'
 params.INF_ELECTION_MODEL = pth_elections_static + 'ElectionModel.txt'   #tsv, no headers
 
-# output files
+#       certain outputs get a unique file name for each run (at least while debugging)
 #
-output_dir = pth_current_run + 'output/'
-params.OUT_REPORT = output_dir + 'fuzzy_report.txt'
-params.OUT_UNMATCHED_PCTIDS = output_dir + 'unmatchedpctids.tsv'
-params.OUT_DETAILS = output_dir + 'details_fuzzy.csv'
 
+
+of = unique_output_name('fuzzy_report14.txt', pth_big_files)
+
+output_vnum = of[-6:-4]     # uhique suffix for output files for this run
+
+params.OUT_REPORT = of
+params.OUT_UNMATCHED_PCTIDS = os.path.join(pth_small_outputs, 'unmatchedpctids' + output_vnum + '.tsv')
+params.OUT_DETAILS = os.path.join(pth_big_files, 'details_fuzzy' + output_vnum + '.csv')
+
+outdtf = open(params.OUT_DETAILS, 'w')
 rprint = Rprint(params.OUT_REPORT).write
 rprint('START TIME: ' + str(datetime.datetime.now()))
 rprint('DETAILS INPUT FILE' + params.INF_DETAILS)
-
 ee = Election('2018 November')
 ee.load(open(params.INF_ELECTION_MODEL, 'r'))
 
@@ -344,7 +346,6 @@ unmatched_choices = AccumWithLine()
 
 # get entries from details.csv
 #
-
 inp_opt = Tevs_options(params.INF_DETAILS, params.INCLUDES)
 rprint('\nLOADING ITEMS FROM DETAILS.CSV ' + params.INF_DETAILS)
 det_fuzz = open(params.OUT_DETAILS, 'w')
@@ -363,12 +364,12 @@ for dl in inp_opt:
 
     lcnt += 1
 
-    precinct_id = precinctids.get(dl.barcode[1:8], None)
+    precinct_id = precinctids.get(dl.corrected_barcode[1:8], None)
     dl.pctid = precinct_id
 
     if precinct_id == None:
-        barcode_no_pctid.add(dl.barcode, file)
-
+        barcode_no_pctid.add(dl.corrected_barcode, file)
+    # print dl.contest
     thiscont = ee.fuzmatch(dl.contest)
     if thiscont is None:
 
@@ -382,7 +383,6 @@ for dl in inp_opt:
             bad_contests += 1
             unmatched_contests.add(dl.contest, dl)
             continue        # give up on this detail line
-
 
     dl.fuz_contest = thiscont.name
     # cont_accum.add(thiscont.name, dl.contest)
@@ -418,19 +418,15 @@ for dl in inp_opt:
                     name = thischoice.name
 
     dl.fuz_choice = name
+    outdtf.write(dl.output())
     choice_accum.add(name, dl.choice)
     tot_records += 1
 
+# report outputs
+#
 rprint('fuzzy match failures from details.csv contests: {}, choices: {}'.format(pcts(bad_contests, tot_records), pcts(bad_choice_tot,  tot_records)))
 rprint('Input lines from details: {}; lines fully processed from details: {} '\
-        .format(inp_opt.linecnt, tot_records))
-
-db_not_details = 0
-details_not_db = 0
-in_both_sources = 0
-diff_vote_counts = 0
-files_not_in_details = Accum()
-
+        .format(inp_opt.linecnt, tot_records))  # TODO: totals off by one
 rprint('\nBARCODES UNMATCHED WITH ' + params.INF_HARTS_PRECINCTS)
 keys = barcode_no_pctid.d.keys()
 if len(keys) == 0:
@@ -451,8 +447,14 @@ if len(unm) == 0:
     rprint('--none--')
 else:
     for x in unm:
-        rprint('   {:28} {:4d} {:6.2f}%'
-               .format(x[0], x[1], 100.0 * x[1] / tot_records))
+        if tot_records:
+            rprint('   {:28} {:4d} {:6.2f}%'
+                   .format(x[0], x[1], 100.0 * x[1] / tot_records))
+            for dl in x[2][:5]:
+                rprint(dl.file)
+        else:
+            rprint('   {:28} {:4d}'
+                   .format(x[0], x[1]))
         # for item in x[2]:
         #     rprint(item)
 
@@ -466,3 +468,16 @@ else:
                .format(x[0], x[1], 100.0 * x[1] / tot_records))
         # for item in x[2]:
         #     rprint(item)
+
+rprint('\nCONFIGURED HARD SUBSTITUTIONS FOR ANYWHERE IN LINE:')
+for x in whole_input_line_hacker.list:
+    rprint('\t{} --> {}'.format(x[1], x[2]))
+
+rprint('\nCONFIGURED HARD SUBSTITUTIONS FOR CONTEST:')
+for x in input_contest_hacker.list:
+    rprint('\t{} --> {}'.format(x[1], x[2]))
+
+rprint('\nCONFIGURED HARD SUBSTITUTIONS FOR BARCODE:')
+for x in barcode_hacklist:
+    rprint('\t{} --> {}'.format(x[0], x[1]))
+

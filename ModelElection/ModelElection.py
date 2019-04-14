@@ -185,6 +185,9 @@ class Election(object):
                 line = line.replace(',', '')    # Eliminate all commas in this TSV file
                 if len(line) == 1:              # blank line?
                     continue                    # comment-only line
+                # z = list((x.strip() for x in line.split('\t')))
+                # print z
+                # print line
                 contest, choice = (x.strip() for x in line.split('\t'))
                 if currcont and contest != currcont.name:
                     self.add(currcont)
